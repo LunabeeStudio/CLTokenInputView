@@ -488,6 +488,7 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     // we noticed that it would be the first responder,
     // but still return isFirstResponder=NO. So always
     // attempt to resign without checking.
+    [self unselectAllTokenViewsAnimated:NO];
     [self.textField resignFirstResponder];
 }
 
