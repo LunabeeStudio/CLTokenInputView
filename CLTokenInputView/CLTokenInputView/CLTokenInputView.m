@@ -42,8 +42,9 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
 {
     self.textField = [[CLBackspaceDetectingTextField alloc] initWithFrame:self.bounds];
     self.textField.backgroundColor = [UIColor clearColor];
-    self.textField.keyboardType = UIKeyboardTypeEmailAddress;
+    self.textField.keyboardType = UIKeyboardTypeDefault;
     self.textField.autocorrectionType = UITextAutocorrectionTypeNo;
+    self.textField.spellCheckingType = UITextSpellCheckingTypeNo;
     self.textField.autocapitalizationType = UITextAutocapitalizationTypeNone;
     self.textField.delegate = self;
     self.additionalTextFieldYOffset = 0.0;
@@ -54,18 +55,18 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
                        action:@selector(onTextFieldDidChange:)
              forControlEvents:UIControlEventEditingChanged];
     [self addSubview:self.textField];
-
+    
     self.tokens = [NSMutableArray arrayWithCapacity:20];
     self.tokenViews = [NSMutableArray arrayWithCapacity:20];
-
-    self.fieldColor = [UIColor lightGrayColor]; 
+    
+    self.fieldColor = [UIColor lightGrayColor];
     
     self.fieldLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     // NOTE: Explicitly not setting a font for the field label
     self.fieldLabel.textColor = self.fieldColor;
     [self addSubview:self.fieldLabel];
     self.fieldLabel.hidden = YES;
-
+    
     self.intrinsicContentHeight = STANDARD_ROW_HEIGHT;
     [self repositionViews];
 }
@@ -112,7 +113,7 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     if ([self.tokens containsObject:token]) {
         return;
     }
-
+    
     [self.tokens addObject:token];
     CLTokenView *tokenView = [[CLTokenView alloc] initWithToken:token font:self.textField.font];
     if ([self respondsToSelector:@selector(tintColor)]) {
@@ -127,10 +128,10 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     if ([self.delegate respondsToSelector:@selector(tokenInputView:didAddToken:)]) {
         [self.delegate tokenInputView:self didAddToken:token];
     }
-
+    
     // Clearing text programmatically doesn't call this automatically
     [self onTextFieldDidChange:self.textField];
-
+    
     [self updatePlaceholderTextVisibility];
     [self repositionViews];
 }
@@ -190,22 +191,22 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     CGRect bounds = self.bounds;
     CGFloat rightBoundary = CGRectGetWidth(bounds) - PADDING_RIGHT;
     CGFloat firstLineRightBoundary = rightBoundary;
-
+    
     CGFloat curX = PADDING_LEFT;
     CGFloat curY = PADDING_TOP;
     CGFloat totalHeight = STANDARD_ROW_HEIGHT;
     BOOL isOnFirstLine = YES;
-
+    
     // Position field view (if set)
     if (self.fieldView) {
         CGRect fieldViewRect = self.fieldView.frame;
         fieldViewRect.origin.x = curX + FIELD_MARGIN_X;
         fieldViewRect.origin.y = curY + ((STANDARD_ROW_HEIGHT - CGRectGetHeight(fieldViewRect))/2.0);
         self.fieldView.frame = fieldViewRect;
-
+        
         curX = CGRectGetMaxX(fieldViewRect) + FIELD_MARGIN_X;
     }
-
+    
     // Position field label (if field name is set)
     if (!self.fieldLabel.hidden) {
         CGSize labelSize = self.fieldLabel.intrinsicContentSize;
@@ -214,25 +215,25 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
         fieldLabelRect.origin.x = curX + FIELD_MARGIN_X;
         fieldLabelRect.origin.y = curY + ((STANDARD_ROW_HEIGHT-CGRectGetHeight(fieldLabelRect))/2.0);
         self.fieldLabel.frame = fieldLabelRect;
-
+        
         curX = CGRectGetMaxX(fieldLabelRect) + FIELD_MARGIN_X;
     }
-
+    
     // Position accessory view (if set)
     if (self.accessoryView) {
         CGRect accessoryRect = self.accessoryView.frame;
         accessoryRect.origin.x = CGRectGetWidth(bounds) - PADDING_RIGHT - CGRectGetWidth(accessoryRect);
         accessoryRect.origin.y = curY;
         self.accessoryView.frame = accessoryRect;
-
+        
         firstLineRightBoundary = CGRectGetMinX(accessoryRect) - HSPACE;
     }
-
+    
     // Position token views
     CGRect tokenRect = CGRectNull;
     for (UIView *tokenView in self.tokenViews) {
         tokenRect = tokenView.frame;
-
+        
         CGFloat tokenBoundary = isOnFirstLine ? firstLineRightBoundary : rightBoundary;
         if (curX + CGRectGetWidth(tokenRect) > tokenBoundary) {
             // Need a new line
@@ -241,15 +242,15 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
             totalHeight += STANDARD_ROW_HEIGHT;
             isOnFirstLine = NO;
         }
-
+        
         tokenRect.origin.x = curX;
-        // Center our tokenView vertically within STANDARD_ROW_HEIGHT
+        // Center our tokenView vertially within STANDARD_ROW_HEIGHT
         tokenRect.origin.y = curY + ((STANDARD_ROW_HEIGHT-CGRectGetHeight(tokenRect))/2.0);
         tokenView.frame = tokenRect;
-
+        
         curX = CGRectGetMaxX(tokenRect) + HSPACE;
     }
-
+    
     // Always indent textfield by a little bit
     curX += TEXT_FIELD_HSPACE;
     CGFloat textBoundary = isOnFirstLine ? firstLineRightBoundary : rightBoundary;
@@ -266,18 +267,18 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
         // Adjust the width
         availableWidthForTextField = rightBoundary - curX;
     }
-
+    
     CGRect textFieldRect = self.textField.frame;
     textFieldRect.origin.x = curX;
     textFieldRect.origin.y = curY + self.additionalTextFieldYOffset;
     textFieldRect.size.width = availableWidthForTextField;
     textFieldRect.size.height = STANDARD_ROW_HEIGHT;
     self.textField.frame = textFieldRect;
-
+    
     CGFloat oldContentHeight = self.intrinsicContentHeight;
     self.intrinsicContentHeight = MAX(totalHeight, CGRectGetMaxY(textFieldRect)+PADDING_BOTTOM);
     [self invalidateIntrinsicContentSize];
-
+    
     if (oldContentHeight != self.intrinsicContentHeight) {
         if ([self.delegate respondsToSelector:@selector(tokenInputView:didChangeHeightTo:)]) {
             [self.delegate tokenInputView:self didChangeHeightTo:self.intrinsicContentSize.height];
@@ -419,10 +420,6 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
 }
 
 
--(void) setText:(NSString*)text {
-    self.textField.text = text;
-}
-
 #pragma mark - CLTokenViewDelegate
 
 - (void)tokenViewDidRequestDelete:(CLTokenView *)tokenView replaceWithText:(NSString *)replacementText
@@ -502,7 +499,7 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     }
     NSString *oldFieldName = _fieldName;
     _fieldName = fieldName;
-
+    
     self.fieldLabel.text = _fieldName;
     [self.fieldLabel invalidateIntrinsicContentSize];
     BOOL showField = (_fieldName.length > 0);
@@ -512,7 +509,7 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     } else if (!showField && self.fieldLabel.superview) {
         [self.fieldLabel removeFromSuperview];
     }
-
+    
     if (oldFieldName == nil || ![oldFieldName isEqualToString:fieldName]) {
         [self repositionViews];
     }
@@ -552,7 +549,7 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
     }
     [_accessoryView removeFromSuperview];
     _accessoryView = accessoryView;
-
+    
     if (_accessoryView != nil) {
         [self addSubview:_accessoryView];
     }
@@ -578,12 +575,12 @@ static CGFloat const FIELD_MARGIN_X = 4.0; // Note: Same as CLTokenView.PADDING_
 {
     [super drawRect:rect];
     if (self.drawBottomBorder) {
-
+        
         CGContextRef context = UIGraphicsGetCurrentContext();
         CGRect bounds = self.bounds;
         CGContextSetStrokeColorWithColor(context, [UIColor lightGrayColor].CGColor);
         CGContextSetLineWidth(context, 0.5);
-
+        
         CGContextMoveToPoint(context, 0, bounds.size.height);
         CGContextAddLineToPoint(context, CGRectGetWidth(bounds), bounds.size.height);
         CGContextStrokePath(context);
